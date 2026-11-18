@@ -1,5 +1,7 @@
-# Lancer : docker compose up -d --build
-# Accès : http://<ip-du-serveur>:8000
+# Sur giga-serveur : docker compose up -d --build
+# Traefik (déjà en place sur le serveur) reçoit le trafic HTTPS, obtient le certificat
+# Let's Encrypt et le renvoie vers ce conteneur. Aucun port n'est publié ici.
+# Le DOMAIN vient du .env (lu automatiquement par compose).
 
 services:
 
@@ -8,14 +10,26 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      SOUVENANCE_ALLOWED_HOSTS: "*"
+      SOUVENANCE_ALLOWED_HOSTS: ${DOMAIN}
+      SOUVENANCE_PUBLIC_URL: https://${DOMAIN}
       SOUVENANCE_DB_PATH: /data/db.sqlite3
       SOUVENANCE_MEDIA_ROOT: /data/media
       TZ: Europe/Paris
-    ports:
-      - "8000:8000"
     volumes:
       - souvenance-data:/data          # base SQLite et photos survivent aux rebuilds
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.souvenance.rule: Host(`${DOMAIN}`)
+      traefik.http.routers.souvenance.entrypoints: websecure
+      traefik.http.routers.souvenance.tls.certresolver: myresolver
+      traefik.http.services.souvenance.loadbalancer.server.port: "8000"
 
 volumes:
   souvenance-data:
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-wildlifesounds_default}

@@ -33,6 +33,8 @@ PUBLIC_URL = os.environ.get("SOUVENANCE_PUBLIC_URL", "").strip().rstrip("/")
 if PUBLIC_URL:
     CSRF_TRUSTED_ORIGINS = [PUBLIC_URL]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # Application definition
