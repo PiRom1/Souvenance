@@ -173,7 +173,9 @@
 }
 
 .sv-frise__track {
-    --sv-step: 8.8rem;
+    /* La frise occupe toute la hauteur restante de l'écran : si les étages ne suffisent pas, ils s'espacent davantage */
+    --sv-avail: calc(100svh - 14rem);
+    --sv-step: max(8.8rem, (var(--sv-avail) - 10.3rem) / (var(--sv-tiers-top) + var(--sv-tiers-bottom)));
     position: relative;
     width: calc(var(--sv-years) * max(100cqw, 64rem));
     height: calc(10.1rem + (var(--sv-tiers-top) + var(--sv-tiers-bottom)) * var(--sv-step) + 0.2rem);

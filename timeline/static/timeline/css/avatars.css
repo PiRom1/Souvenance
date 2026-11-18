@@ -88,6 +88,7 @@
     font-family: var(--sv-font-hand);
     font-size: 1.15rem;
     line-height: 1;
+    text-transform: capitalize;
     color: var(--sv-ink-soft);
     transition: color 0.3s;
 }
