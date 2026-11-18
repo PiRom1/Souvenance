@@ -1,0 +1,11 @@
+{% load static %}<div class="sv-avatars sv-avatars--{{ widget.size }}">
+{% for group_name, group_choices, group_index in widget.optgroups %}{% for option in group_choices %}
+    <label class="sv-avatar-option" style="--sv-tilt: {{ option.tilt }}deg">
+        <input class="sv-avatar-option__input" type="checkbox" name="{{ option.name }}" value="{{ option.value }}"{% if option.selected %} checked{% endif %}{% include "django/forms/widgets/attrs.html" with widget=option %}>
+        <span class="sv-avatar-option__face">
+            <img class="sv-avatar-option__img" src="{% static 'timeline/img/'|add:option.username|add:'.png' %}" alt="">
+        </span>
+        <span class="sv-avatar-option__name">{{ option.label }}</span>
+    </label>
+{% endfor %}{% endfor %}
+</div>

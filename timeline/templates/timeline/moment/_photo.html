@@ -1,0 +1,23 @@
+{% load static %}<figure class="sv-photo sv-photo--{{ image.cadre }} sv-photo--{{ image.ratio }}" style="--sv-tilt: {{ image.inclinaison }}deg"
+        data-photo data-thumb="{% if est_participant %}1{% else %}0{% endif %}" data-tags="{% for tag in image.tags %}{{ tag.username }} {% endfor %}" data-credit="{{ image.note.auteur }}, {{ image.note.date|date:'d/m/y' }}">
+    <a class="sv-photo__link" href="{{ image.fichier.url }}" data-lightbox="{{ groupe }}">
+        <img src="{{ image.url_affichage }}" alt="{{ image.legende|default:image.nom }}" loading="lazy">
+    </a>
+    {% if reste %}<span class="sv-photo__more" aria-hidden="true">+{{ reste }}</span>{% endif %}
+    {% if image.legende or image.tags %}
+        <figcaption class="sv-photo__caption">
+            {% if image.legende %}<span class="sv-photo__text">{{ image.legende }}</span>{% endif %}
+            {% if image.tags %}<span class="sv-photo__faces">{% for tag in image.tags %}<img class="sv-face sv-face--tiny" src="{% static 'timeline/img/'|add:tag.username|add:'.png' %}" alt="{{ tag }}" title="{{ tag }}">{% endfor %}</span>{% endif %}
+        </figcaption>
+    {% endif %}
+    {% if est_participant %}
+        {% if image.id == moment.thumbnail_id %}
+            <span class="sv-photo__badge">Vignette</span>
+        {% else %}
+            <form class="sv-photo__thumb" method="post" action="{% url 'moment_thumbnail' moment.id image.id %}">
+                {% csrf_token %}{% if retour %}<input type="hidden" name="retour" value="{{ retour }}">{% endif %}
+                <button type="submit">Choisir comme vignette</button>
+            </form>
+        {% endif %}
+    {% endif %}
+</figure>

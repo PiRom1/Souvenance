@@ -1,0 +1,77 @@
+{% extends "timeline/base.html" %}
+{% load static %}
+
+{% block title %}{{ titre }} — Souvenance{% endblock %}
+{% block page_class %}sv-page--form{% endblock %}
+
+{% block head %}<script src="{% static 'timeline/js/moment_form.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+<div class="sv-paper sv-momentform">
+    <header class="sv-momentform__head">
+        <h1 class="sv-momentform__title">{{ titre }}</h1>
+        {% if not form.instance.pk %}<p class="sv-momentform__intro">Les notes et les photos viendront ensuite, une fois le moment créé.</p>{% endif %}
+    </header>
+
+    <form class="sv-momentform__form" method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="sv-momentform__layout">
+            <div class="sv-momentform__main">
+                <div class="sv-field sv-field--name">
+                    <label for="{{ form.nom.id_for_label }}">Comment s'appelle ce moment ?</label>
+                    {{ form.nom }}
+                    {{ form.nom.errors }}
+                </div>
+
+                <fieldset class="sv-momentform__section">
+                    <legend class="sv-momentform__legend">Quand, et où ?</legend>
+                    <div class="sv-momentform__grid">
+                        <div class="sv-field">
+                            <label for="{{ form.date_debut.id_for_label }}">Premier jour</label>
+                            {{ form.date_debut }}
+                            {{ form.date_debut.errors }}
+                        </div>
+                        <div class="sv-field">
+                            <label for="{{ form.date_fin.id_for_label }}">Dernier jour</label>
+                            {{ form.date_fin }}
+                            {{ form.date_fin.errors }}
+                        </div>
+                        <div class="sv-field">
+                            <label for="{{ form.lieu.id_for_label }}">Lieu</label>
+                            {{ form.lieu }}
+                            {{ form.lieu.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="sv-momentform__section">
+                    <legend class="sv-momentform__legend">Brève description</legend>
+                    <div class="sv-field">
+                        <label class="sv-field__sr" for="{{ form.description.id_for_label }}">Brève description</label>
+                        {{ form.description }}
+                        {{ form.description.errors }}
+                    </div>
+                </fieldset>
+            </div>
+
+            <fieldset class="sv-momentform__people" data-people>
+                <legend class="sv-momentform__legend">Qui était là ?</legend>
+                <div class="sv-momentform__tools">
+                    <button class="sv-btn sv-btn--link" type="button" data-people-all>Tout le monde</button>
+                    <button class="sv-btn sv-btn--link" type="button" data-people-none>Personne</button>
+                    <span class="sv-momentform__count" data-people-count aria-live="polite"></span>
+                </div>
+                {{ form.participants }}
+                {{ form.participants.errors }}
+            </fieldset>
+        </div>
+
+        <div class="sv-momentform__actions">
+            <a class="sv-btn sv-btn--ghost" href="{% if form.instance.pk %}{% url 'moment' form.instance.pk %}{% else %}{% url 'home' %}{% endif %}">Annuler</a>
+            <button class="sv-btn sv-btn--large" type="submit">{% if form.instance.pk %}Enregistrer les changements{% else %}Créer le moment{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

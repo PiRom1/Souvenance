@@ -1,0 +1,26 @@
+{# Les champs d'une photo, dans l'éditeur de droite. `f` est son formulaire de détails #}
+<div class="sv-field">
+    <label for="{{ f.legende.id_for_label }}">Légende</label>
+    {{ f.legende }}
+    {{ f.legende.errors }}
+</div>
+<div class="sv-field">
+    <div class="sv-field__row">
+        <span class="sv-label">Qui est sur la photo ?</span>
+        <span class="sv-field__tools">
+            <button class="sv-btn sv-btn--link" type="button" data-tags-all>Tout le monde</button>
+            <button class="sv-btn sv-btn--link" type="button" data-tags-none>Personne</button>
+        </span>
+    </div>
+    {{ f.tags }}
+</div>
+<div class="sv-field">
+    <label for="{{ f.jour.id_for_label }}">Prise le</label>
+    <div class="sv-field__inline">
+        {{ f.jour }}
+        {{ f.heure }}
+        <span class="sv-field__time" data-time{% if not f.heure.value %} hidden{% endif %}>à <span data-time-value>{{ f.heure.value|default:"" }}</span></span>
+    </div>
+    {{ f.jour.errors }}
+</div>
+{{ f.nom.as_hidden }}

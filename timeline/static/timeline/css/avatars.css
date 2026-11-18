@@ -1,0 +1,118 @@
+/* Sélecteur d'avatars : un visage net, en couleur et nimbé quand il est choisi */
+
+.sv-avatars {
+    --sv-avatar-size: 5.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sv-space-sm) var(--sv-space-md);
+    padding-top: var(--sv-space-xs);
+}
+
+.sv-avatars--small { --sv-avatar-size: 3.6rem; gap: var(--sv-space-xs) var(--sv-space-sm); }
+
+.sv-avatar-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: var(--sv-avatar-size);
+    cursor: pointer;
+}
+
+/* Case réelle, cachée mais focalisable au clavier */
+.sv-avatar-option__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.sv-avatar-option__face {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--sv-avatar-size);
+    height: var(--sv-avatar-size);
+}
+
+/* Le halo : un anneau d'encre et d'or qui tourne en respirant */
+.sv-avatar-option__face::before {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--sv-bordeaux), var(--sv-gold), var(--sv-cream), var(--sv-bordeaux));
+    filter: blur(9px);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.4s var(--sv-ease), transform 0.4s var(--sv-ease);
+}
+
+.sv-avatar-option__img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: grayscale(1) sepia(0.6) brightness(0.95);
+    opacity: 0.5;
+    transform: scale(0.88) rotate(var(--sv-tilt));
+    transition: filter 0.35s var(--sv-ease), opacity 0.35s var(--sv-ease), transform 0.35s var(--sv-ease);
+}
+
+.sv-avatar-option:hover .sv-avatar-option__img { opacity: 0.8; transform: scale(0.95) rotate(var(--sv-tilt)); }
+
+.sv-avatar-option__input:checked + .sv-avatar-option__face::before {
+    opacity: 0.8;
+    transform: scale(1);
+    animation: sv-halo 7s linear infinite;
+}
+
+.sv-avatar-option__input:checked + .sv-avatar-option__face .sv-avatar-option__img {
+    filter: none;
+    opacity: 1;
+    transform: scale(1.07) translateY(-3px) rotate(0deg);
+    animation: sv-pop 0.5s var(--sv-ease);
+}
+
+.sv-avatar-option__input:focus-visible + .sv-avatar-option__face {
+    outline: 2px solid var(--sv-bordeaux);
+    outline-offset: 4px;
+    border-radius: 50%;
+}
+
+.sv-avatar-option__name {
+    margin-top: var(--sv-space-2xs);
+    font-family: var(--sv-font-hand);
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--sv-ink-soft);
+    transition: color 0.3s;
+}
+
+.sv-avatars--small .sv-avatar-option__name { font-size: 1rem; }
+
+.sv-avatar-option__input:checked ~ .sv-avatar-option__name { color: var(--sv-bordeaux); font-weight: 700; }
+
+@keyframes sv-halo {
+    0%   { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.14); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes sv-pop {
+    0%   { transform: scale(0.85) rotate(-6deg); }
+    60%  { transform: scale(1.16) translateY(-5px) rotate(3deg); }
+    100% { transform: scale(1.07) translateY(-3px) rotate(0deg); }
+}
+
+/* Visage simple, sans interaction (cartes, en-têtes) */
+.sv-face {
+    display: block;
+    width: 2.2rem;
+    height: 2.2rem;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 1px rgba(59, 42, 32, 0.25));
+}

@@ -1,0 +1,90 @@
+{% extends "timeline/base.html" %}
+{% load static %}
+
+{% block title %}{{ moment.nom }} — Souvenance{% endblock %}
+{% block page_class %}sv-page--book{% endblock %}
+
+{% block head %}
+    <script src="{% static 'timeline/js/lightbox.js' %}" defer></script>
+    <script src="{% static 'timeline/js/book.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+{% include "timeline/app/_doodle_symbols.html" %}
+
+<div class="sv-bookbar">
+    <a class="sv-btn sv-btn--ghost" href="{% url 'home' %}?annee={{ moment.date_debut.year }}">Retour à la frise</a>
+    <span class="sv-bookbar__spacer"></span>
+    <a class="sv-btn sv-btn--ghost" href="{% url 'moment_photos' moment.id %}">Photothèque</a>
+    {% if moment.createur == user %}<a class="sv-btn sv-btn--ghost" href="{% url 'moment_edit' moment.id %}">Modifier le moment</a>{% endif %}
+    <a class="sv-btn" href="{% url 'note_add' moment.id %}">Ajouter une note</a>
+</div>
+
+<div class="sv-book" data-book>
+    <div class="sv-book__cover">
+        <div class="sv-book__paper">
+            <div class="sv-book__clip">
+                <div class="sv-book__flow">
+
+                        <section class="sv-titlepage">
+                            {% if moment.thumbnail %}
+                                <figure class="sv-photo sv-photo--polaroid sv-titlepage__cover" style="--sv-tilt: -2deg">
+                                    <a class="sv-photo__link" href="{{ moment.thumbnail.fichier.url }}" data-lightbox="couverture"><img src="{{ moment.thumbnail.url_affichage }}" alt=""></a>
+                                </figure>
+                            {% endif %}
+                            <h1 class="sv-titlepage__title">{{ moment.nom }}</h1>
+                            <p class="sv-titlepage__dates">
+                                {% if moment.date_fin %}Du {{ moment.date_debut|date:"j F Y" }} au {{ moment.date_fin|date:"j F Y" }}{% else %}Le {{ moment.date_debut|date:"j F Y" }}{% endif %}
+                            </p>
+                            {% if moment.lieu %}<p class="sv-titlepage__place">{{ moment.lieu }}</p>{% endif %}
+                            <div class="sv-titlepage__faces">
+                                {% for person in participants %}
+                                    <img class="sv-face sv-face--large" src="{% static 'timeline/img/'|add:person.username|add:'.png' %}" alt="{{ person }}" title="{{ person }}">
+                                {% endfor %}
+                            </div>
+                        </section>
+
+                        <section class="sv-descpage">
+                            {% if moment.description %}
+                                <p class="sv-descpage__text">{{ moment.description|linebreaksbr }}</p>
+                            {% else %}
+                                <p class="sv-descpage__text sv-descpage__text--empty">Pas encore de description pour ce moment.</p>
+                            {% endif %}
+                            <svg class="sv-sketch sv-descpage__doodle" viewBox="0 0 140 120" aria-hidden="true"><use href="#sv-d-{{ doodle }}"/></svg>
+                        </section>
+
+                        {% for note in notes %}
+                            <article class="sv-note sv-note--{{ note.alignement }}" data-note>
+                                <header class="sv-note__head">
+                                    <img class="sv-face sv-face--small" src="{% static 'timeline/img/'|add:note.auteur.username|add:'.png' %}" alt="">
+                                    <span class="sv-note__author">{{ note.auteur }}</span>
+                                    <span class="sv-note__date">({{ note.date|date:"d/m/y" }})</span>
+                                    {% if note.lieu_effectif %}<span class="sv-note__place">à {{ note.lieu_effectif }}</span>{% endif %}
+                                    {% if note.auteur == user %}<a class="sv-note__edit" href="{% url 'note_edit' note.id %}">modifier</a>{% endif %}
+                                </header>
+                                {% if note.texte %}<p class="sv-note__text">{{ note.texte|linebreaksbr }}</p>{% endif %}
+                                {% if note.photos %}
+                                    <div class="sv-note__photos sv-note__photos--{{ note.nombre_photos }}">
+                                        {% for image in note.apercu %}
+                                            {% if forloop.last %}{% include "timeline/moment/_photo.html" with groupe=note.groupe reste=note.reste %}{% else %}{% include "timeline/moment/_photo.html" with groupe=note.groupe reste=0 %}{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% if note.suite %}
+                                        <div class="sv-note__suite" hidden>
+                                            {% for image in note.suite %}{% include "timeline/moment/_photo.html" with groupe=note.groupe reste=0 %}{% endfor %}
+                                        </div>
+                                        <button class="sv-note__more" type="button" data-open-group="{{ note.groupe }}" data-total="{{ note.photos|length }}">Voir les {{ note.photos|length }} photos</button>
+                                    {% endif %}
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+            </div>
+            <div class="sv-book__spine"></div>
+        </div>
+    </div>
+    <button class="sv-book__nav sv-book__nav--prev" type="button" aria-label="Pages précédentes" data-prev></button>
+    <button class="sv-book__nav sv-book__nav--next" type="button" aria-label="Pages suivantes" data-next></button>
+</div>
+<p class="sv-book__counter" data-counter aria-live="polite"></p>
+{% endblock %}

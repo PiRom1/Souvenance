@@ -1,0 +1,21 @@
+# Lancer : docker compose up -d --build
+# Accès : http://<ip-du-serveur>:8000
+
+services:
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SOUVENANCE_ALLOWED_HOSTS: "*"
+      SOUVENANCE_DB_PATH: /data/db.sqlite3
+      SOUVENANCE_MEDIA_ROOT: /data/media
+      TZ: Europe/Paris
+    ports:
+      - "8000:8000"
+    volumes:
+      - souvenance-data:/data          # base SQLite et photos survivent aux rebuilds
+
+volumes:
+  souvenance-data:

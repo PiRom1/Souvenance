@@ -1,0 +1,16 @@
+{% extends "timeline/base.html" %}
+
+{% block title %}Connexion — Souvenance{% endblock %}
+{% block page_class %}sv-page--narrow{% endblock %}
+
+{% block content %}
+<div class="sv-paper">
+    <h1>Ouvrir le livre</h1>
+    <form class="sv-form" method="post">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="sv-btn" type="submit">Se connecter</button>
+    </form>
+</div>
+{% endblock %}

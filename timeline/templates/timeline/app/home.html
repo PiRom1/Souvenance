@@ -1,0 +1,101 @@
+{% extends "timeline/base.html" %}
+{% load static %}
+
+{% block content %}
+{% include "timeline/app/_doodle_symbols.html" %}
+
+<details class="sv-filters"{% if filtres_actifs %} open{% endif %}>
+    <summary class="sv-filters__summary">Filtres{% if filtres_actifs %} <span class="sv-filters__active">actifs</span>{% endif %}</summary>
+    <form class="sv-form sv-filters__form" method="get">
+        <input type="hidden" name="annee" value="{{ annee_choisie }}" data-year-input>
+        {{ form.as_div }}
+        <div class="sv-filters__actions">
+            <button class="sv-btn" type="submit">Filtrer</button>
+            <a class="sv-btn sv-btn--ghost" href="{% url 'home' %}">Réinitialiser</a>
+        </div>
+    </form>
+</details>
+
+<div class="sv-timeline">
+    <nav class="sv-roll" aria-label="Année" data-roll data-selected="{{ annee_choisie }}">
+        {% for annee in frise.annees %}
+            <button class="sv-roll__year{% if not annee.nombre %} sv-roll__year--empty{% endif %}" type="button"
+                    data-year="{{ annee.annee }}" data-count="{{ annee.nombre }}" data-start="{{ annee.x }}" data-width="{{ annee.largeur }}">{{ annee.annee }}</button>
+        {% endfor %}
+    </nav>
+
+    <div class="sv-frise-wrap">
+    <span class="sv-frise-veil sv-frise-veil--top" aria-hidden="true"></span>
+    <span class="sv-frise-veil sv-frise-veil--bottom" aria-hidden="true"></span>
+    <span class="sv-frise-veil sv-frise-veil--left" aria-hidden="true"></span>
+    <span class="sv-frise-veil sv-frise-veil--right" aria-hidden="true"></span>
+    <div class="sv-frise" data-frise tabindex="0" aria-label="Frise du temps">
+        <div class="sv-frise__track" style="--sv-years: {{ frise.nombre_annees }}; --sv-tiers-top: {{ frise.etages_haut }}; --sv-tiers-bottom: {{ frise.etages_bas }}">
+            <div class="sv-frise__plot">
+                {% for annee in frise.annees %}
+                    <div class="sv-yearlabel" style="--sv-x: {{ annee.x }}%; --sv-w: {{ annee.largeur }}%">
+                        <p class="sv-yearlabel__text">
+                            <span class="sv-yearlabel__number">{{ annee.annee }}</span>
+                            <span class="sv-yearlabel__count">{% if annee.nombre %}{{ annee.nombre }} souvenir{{ annee.nombre|pluralize }}{% else %}rien encore{% endif %}</span>
+                        </p>
+                    </div>
+                    <div class="sv-doodles{% if forloop.counter0|divisibleby:2 %}{% else %} sv-doodles--mirror{% endif %}" aria-hidden="true" style="--sv-x: {{ annee.x }}%; --sv-w: {{ annee.largeur }}%">
+                        {% include "timeline/app/_doodle_layer.html" %}
+                    </div>
+                {% endfor %}
+
+                {% for mois in frise.mois %}
+                    <div class="sv-month{% if mois.debut_annee %} sv-month--year-start{% endif %}" style="--sv-x: {{ mois.x }}%; --sv-w: {{ mois.largeur }}%">
+                        <span class="sv-month__name">{{ mois.nom }}</span>
+                    </div>
+                {% endfor %}
+
+                <div class="sv-axis">
+                    <svg class="sv-wave" viewBox="0 0 {{ frise.largeur_trace }} 48" preserveAspectRatio="none" aria-hidden="true">
+                        <path class="sv-wave__axis" d="{{ frise.axe }}"/>
+                        {% for pin in frise.pastilles %}{% if pin.est_etale %}<path class="sv-wave__span" d="{{ pin.trace }}"/>{% endif %}{% endfor %}
+                    </svg>
+                    {% for pin in frise.pastilles %}
+                        <span class="sv-dot" style="--sv-x: {{ pin.x }}%; --sv-dy: {{ pin.decalage }}"></span>
+                    {% endfor %}
+
+                    {% for pin in frise.pastilles %}
+                        <a class="sv-pin sv-pin--{{ pin.cote }}" href="{% url 'moment' pin.moment.id %}"
+                           style="--sv-x: {{ pin.x }}%; --sv-dy: {{ pin.decalage }}; --sv-tier: {{ pin.etage }}; --sv-tilt: {{ pin.inclinaison }}deg">
+                            <span class="sv-pin__cover">
+                                {% if pin.moment.thumbnail %}
+                                    <img src="{{ pin.moment.thumbnail.url_affichage }}" alt="" loading="lazy">
+                                {% else %}
+                                    <span class="sv-pin__initial">{{ pin.moment.nom|slice:":1" }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="sv-pin__title">{{ pin.moment.nom }}</span>
+
+                            <span class="sv-pin__card">
+                                <span class="sv-pin__card-title">{{ pin.moment.nom }}</span>
+                                <span class="sv-pin__card-dates">
+                                    Le {{ pin.moment.date_debut|date:"j F Y" }}{% if pin.moment.date_fin %}, jusqu'au {{ pin.moment.date_fin|date:"j F Y" }}{% endif %}
+                                </span>
+                                {% if pin.moment.lieu %}<span class="sv-pin__card-place">{{ pin.moment.lieu }}</span>{% endif %}
+                                {% if pin.moment.description %}<span class="sv-pin__card-text">{{ pin.moment.description|truncatewords:26 }}</span>{% endif %}
+                                <span class="sv-pin__card-faces">
+                                    {% for person in pin.participants %}
+                                        <img class="sv-face" src="{% static 'timeline/img/'|add:person.username|add:'.png' %}" alt="{{ person }}" title="{{ person }}">
+                                    {% endfor %}
+                                </span>
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+{% if not frise.pastilles %}
+    <p class="sv-timeline__empty">{% if filtres_actifs %}Aucun souvenir ne correspond aux filtres.{% else %}Aucun souvenir pour l'instant.{% endif %}</p>
+{% endif %}
+
+<script src="{% static 'timeline/js/timeline.js' %}" defer></script>
+{% endblock %}

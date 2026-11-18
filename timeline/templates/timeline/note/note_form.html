@@ -1,0 +1,107 @@
+{% extends "timeline/base.html" %}
+{% load static %}
+
+{% block title %}{{ titre }} — Souvenance{% endblock %}
+{% block page_class %}sv-page--form{% endblock %}
+
+{% block head %}<script src="{% static 'timeline/js/note_form.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+<div class="sv-paper sv-momentform sv-noteform">
+    <header class="sv-momentform__head">
+        <h1 class="sv-momentform__title">{{ titre }}</h1>
+        <p class="sv-momentform__intro">dans « {{ moment.nom }} »</p>
+    </header>
+
+    <form class="sv-momentform__form" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% if formset %}{{ formset.management_form }}{{ formset.non_form_errors }}{% endif %}
+
+        <div class="sv-momentform__layout sv-noteform__layout">
+            <div class="sv-momentform__main">
+                <div class="sv-momentform__grid sv-noteform__grid">
+                    <div class="sv-field">
+                        <label for="{{ form.date.id_for_label }}">Jour</label>
+                        {{ form.date }}
+                        {{ form.date.errors }}
+                    </div>
+                    <div class="sv-field">
+                        <label for="{{ form.lieu.id_for_label }}">Lieu</label>
+                        {{ form.lieu }}
+                        {{ form.lieu.errors }}
+                    </div>
+                </div>
+
+                <div class="sv-field sv-field--grow">
+                    <label for="{{ form.texte.id_for_label }}">Ta note</label>
+                    {{ form.texte }}
+                    {{ form.texte.errors }}
+                </div>
+
+                <div class="sv-clip">
+                    <label class="sv-clip__button" for="{{ form.images.id_for_label }}" data-drop>
+                        <svg class="sv-clip__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                        <span class="sv-clip__text">
+                            <span class="sv-clip__title">Joindre des photos</span>
+                            <span class="sv-clip__hint" data-clip-hint>Clique ou glisse-les ici</span>
+                        </span>
+                    </label>
+                    <div class="sv-field__sr">{{ form.images }}</div>
+                    {{ form.images.errors }}
+                </div>
+            </div>
+
+            <section class="sv-photoeditor" data-editor data-default-date="{{ date_defaut }}" aria-label="Photos de la note">
+                <div class="sv-photoeditor__bar">
+                    <h2 class="sv-photoeditor__title">Photos</h2>
+                    <span class="sv-photoeditor__count" data-counter aria-live="polite"></span>
+                </div>
+
+                <div class="sv-photoeditor__strip" data-strip hidden></div>
+
+                <div class="sv-photoeditor__empty" data-empty>
+                    <svg class="sv-photoeditor__emptyicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <p>Tes photos apparaîtront ici.</p>
+                    <p class="sv-photoeditor__emptyhint">Tu pourras leur donner une légende, les dater et dire qui est dessus, une par une.</p>
+                </div>
+
+                <div class="sv-photoeditor__stage" data-stage hidden>
+                    <button class="sv-photoeditor__nav sv-photoeditor__nav--prev" type="button" aria-label="Photo précédente" data-prev></button>
+                    <button class="sv-photoeditor__nav sv-photoeditor__nav--next" type="button" aria-label="Photo suivante" data-next></button>
+                    <div data-slides>
+                        {% for image_form in formset %}
+                            <div class="sv-photoeditor__slide" data-slide hidden>
+                                {{ image_form.id }}
+                                <figure class="sv-photoeditor__frame">
+                                    <img class="sv-photoeditor__img" src="{{ image_form.instance.url_affichage }}" alt="">
+                                    <label class="sv-photoeditor__remove">{{ image_form.DELETE }}<span class="sv-photoeditor__removetext" data-on="Sera retirée" data-off="Retirer">Retirer</span></label>
+                                </figure>
+                                <div class="sv-photoeditor__fields">
+                                    {% include "timeline/note/_photo_fields.html" with f=image_form %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {# Modèle d'une nouvelle photo : rempli dès la sélection des fichiers (JS) #}
+        <template id="new-image-template">
+            <figure class="sv-photoeditor__frame">
+                <img class="sv-photoeditor__img" alt="">
+                <button class="sv-photoeditor__remove" type="button" data-remove>Retirer</button>
+            </figure>
+            <div class="sv-photoeditor__fields">
+                {% include "timeline/note/_photo_fields.html" with f=empty_image_form %}
+            </div>
+        </template>
+
+        <div class="sv-momentform__actions">
+            <a class="sv-btn sv-btn--ghost" href="{% url 'moment' moment.id %}">Annuler</a>
+            <button class="sv-btn sv-btn--large" type="submit">{% if note %}Enregistrer les changements{% else %}Publier la note{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

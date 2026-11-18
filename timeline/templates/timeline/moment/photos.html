@@ -1,0 +1,44 @@
+{% extends "timeline/base.html" %}
+{% load static %}
+
+{% block title %}Photothèque — {{ moment.nom }}{% endblock %}
+{% block page_class %}sv-page--book{% endblock %}
+
+{% block head %}
+    <script src="{% static 'timeline/js/lightbox.js' %}" defer></script>
+    <script src="{% static 'timeline/js/gallery.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="sv-bookbar">
+    <a class="sv-btn sv-btn--ghost" href="{% url 'moment' moment.id %}">Retour au livre</a>
+    <span class="sv-bookbar__spacer"></span>
+    <a class="sv-btn" href="{% url 'note_add' moment.id %}">Ajouter une note</a>
+</div>
+
+<h1 class="sv-gallery__title">Photothèque de {{ moment.nom }}</h1>
+<p class="sv-gallery__count">{{ images|length }} photo{{ images|length|pluralize }}</p>
+
+{% if personnes_taguees %}
+    <div class="sv-gallery__filter">
+        <span class="sv-label">Sur les photos</span>
+        <div class="sv-avatars sv-avatars--small">
+            {% for person in personnes_taguees %}
+                <label class="sv-avatar-option" style="--sv-tilt: {% cycle '-3' '2' '-1' '3' %}deg">
+                    <input class="sv-avatar-option__input" type="checkbox" value="{{ person.username }}" data-gallery-person>
+                    <span class="sv-avatar-option__face"><img class="sv-avatar-option__img" src="{% static 'timeline/img/'|add:person.username|add:'.png' %}" alt=""></span>
+                    <span class="sv-avatar-option__name">{{ person }}</span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<div class="sv-gallery" data-gallery>
+    {% for image in images %}
+        {% include "timeline/moment/_photo.html" with retour="photos" %}
+    {% empty %}
+        <p>Aucune photo pour l'instant. Elles arrivent avec les notes.</p>
+    {% endfor %}
+</div>
+{% endblock %}

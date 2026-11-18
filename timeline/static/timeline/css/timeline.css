@@ -1,0 +1,445 @@
+/* ---------- Filtres ---------- */
+
+.sv-filters { margin-bottom: var(--sv-space-md); }
+
+.sv-filters__summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sv-space-xs);
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--sv-font-title);
+    font-size: var(--sv-text-medium);
+    font-style: italic;
+}
+
+.sv-filters__summary::-webkit-details-marker { display: none; }
+
+.sv-filters__summary::after {
+    content: "";
+    width: 0.45rem;
+    height: 0.45rem;
+    margin: -0.2rem 0 0 0.3rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.3s var(--sv-ease);
+}
+
+.sv-filters[open] .sv-filters__summary::after { transform: rotate(225deg); margin-top: 0.2rem; }
+
+.sv-filters__active {
+    padding: 0 0.6rem;
+    border-radius: var(--sv-radius-round);
+    background: var(--sv-bordeaux);
+    color: var(--sv-paper);
+    font-family: var(--sv-font-ui);
+    font-size: var(--sv-text-small);
+    font-style: normal;
+}
+
+.sv-filters__form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--sv-space-sm) var(--sv-space-md);
+    margin-top: var(--sv-space-sm);
+    padding: var(--sv-space-md);
+    background: rgba(251, 246, 234, 0.7);
+    border: 1px dashed var(--sv-ink-faint);
+}
+
+.sv-filters__form > div { margin: 0; }
+.sv-filters__form > div:has(.sv-avatars),
+.sv-filters__actions { grid-column: 1 / -1; }
+.sv-filters__form > .sv-filters__actions { flex-direction: row; align-items: center; gap: var(--sv-space-sm); }
+
+/* ---------- Disposition : sélecteur d'année à gauche, frise à droite ---------- */
+
+.sv-timeline {
+    display: grid;
+    grid-template-columns: 8rem minmax(0, 1fr);
+    gap: var(--sv-space-md);
+    align-items: start;
+}
+
+/* ---------- Sélecteur d'année : un cylindre de coffre-fort ---------- */
+
+.sv-roll {
+    position: sticky;
+    top: var(--sv-space-md);
+    height: 24rem;
+    overflow: hidden;
+    perspective: 650px;
+    touch-action: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+}
+
+/* Le repère fixe, comme l'encoche d'une molette */
+.sv-roll::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 0.9rem;
+    height: 1px;
+    background: var(--sv-bordeaux);
+    box-shadow: 0 0 0 1px rgba(110, 31, 46, 0.12);
+}
+
+.sv-roll__year {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 1.2rem;
+    height: 3.4rem;
+    margin-top: -1.7rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--sv-ink);
+    font-family: var(--sv-font-title);
+    font-size: 2.3rem;
+    font-weight: 300;
+    text-align: right;
+    cursor: pointer;
+    opacity: var(--sv-o, 0);
+    transform: translateY(var(--sv-y, 0px)) rotateX(var(--sv-rx, 0deg)) scale(var(--sv-s, 1));
+    transform-origin: right center;
+    transition: transform 0.12s linear, opacity 0.12s linear, color 0.3s;
+}
+
+.sv-roll__year--empty { color: var(--sv-ink-soft); font-style: italic; }
+.sv-roll__year.is-selected { color: var(--sv-bordeaux); font-weight: 500; font-style: normal; }
+
+/* ---------- La frise ---------- */
+
+.sv-frise-wrap { position: relative; min-width: 0; }
+
+.sv-frise-wrap .sv-frise {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 1.9rem, #000 calc(100% - 2.8rem), transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 1.9rem, #000 calc(100% - 2.8rem), transparent);
+    mask-composite: intersect;
+}
+
+/* Les quatre bords se fondent dans la page : la frise s'estompe (masque) et un léger flou y est ajouté */
+.sv-frise-veil {
+    position: absolute;
+    z-index: 20;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+}
+
+.sv-frise-veil--top { left: 0; right: 0; height: 1.9rem; }
+.sv-frise-veil--bottom { left: 0; right: 0; height: 2.6rem; }
+.sv-frise-veil--left, .sv-frise-veil--right { top: 0; bottom: 0; width: 4.2rem; }
+
+.sv-frise-veil--top { top: 0; -webkit-mask-image: linear-gradient(to bottom, #000, transparent); mask-image: linear-gradient(to bottom, #000, transparent); }
+.sv-frise-veil--bottom { bottom: 0; -webkit-mask-image: linear-gradient(to top, #000, transparent); mask-image: linear-gradient(to top, #000, transparent); }
+.sv-frise-veil--left { left: 0; -webkit-mask-image: linear-gradient(to right, #000, transparent); mask-image: linear-gradient(to right, #000, transparent); }
+.sv-frise-veil--right { right: 0; -webkit-mask-image: linear-gradient(to left, #000, transparent); mask-image: linear-gradient(to left, #000, transparent); }
+
+.sv-frise {
+    container-type: inline-size;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    outline: none;
+}
+
+.sv-frise::-webkit-scrollbar { display: none; }
+
+@media (hover: hover) and (min-width: 48.01rem) {
+    .sv-frise { cursor: grab; }
+    .sv-frise.is-dragging { cursor: grabbing; user-select: none; }
+    .sv-frise.is-dragging .sv-pin { pointer-events: none; }
+}
+
+.sv-frise__track::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--sv-cream-deep) url("../img/papier-froisse.svg") center / 56rem auto;
+    background-blend-mode: multiply;
+    opacity: 0.42;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+    pointer-events: none;
+}
+
+.sv-frise__track {
+    --sv-step: 8.8rem;
+    position: relative;
+    width: calc(var(--sv-years) * max(100cqw, 64rem));
+    height: calc(10.1rem + (var(--sv-tiers-top) + var(--sv-tiers-bottom)) * var(--sv-step) + 0.2rem);
+}
+
+.sv-frise__plot { position: absolute; inset: 0; }
+
+/* Colonnes de mois, écrites en trait fin */
+.sv-month {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--sv-x);
+    width: var(--sv-w);
+    padding: 6rem 0 0 0.5rem;
+    border-left: 1px dotted var(--sv-ink-faint);
+}
+
+.sv-month--year-start { border-left: 1px solid var(--sv-ink-soft); }
+
+/* L'année : en bordeaux, au-dessus de tout, et qui reste en vue tant qu'on est dans cette année */
+.sv-yearlabel {
+    position: absolute;
+    top: 2.2rem;
+    left: var(--sv-x);
+    z-index: 12;
+    width: var(--sv-w);
+    pointer-events: none;
+}
+
+.sv-yearlabel__text {
+    position: sticky;
+    left: 5rem;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin: 0 0 0 1.1rem;
+    padding-right: 1rem;
+    text-shadow: 0 0 10px var(--sv-cream), 0 0 6px var(--sv-cream), 0 0 3px var(--sv-cream);
+}
+
+.sv-yearlabel__number {
+    font-family: var(--sv-font-title);
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    color: color-mix(in srgb, var(--sv-bordeaux) 72%, var(--sv-cream));
+}
+
+.sv-yearlabel__count { font-family: var(--sv-font-hand); font-size: 1.2rem; line-height: 1; color: var(--sv-ink-soft); opacity: 0.75; }
+
+/* L'axe du temps : un fil pointillé qui ondule, comme les itinéraires des cartes illustrées */
+.sv-axis {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(8.9rem + var(--sv-tiers-top) * var(--sv-step) + 1.5rem);
+}
+
+.sv-wave {
+    position: absolute;
+    left: 0;
+    top: -1.5rem;
+    width: 100%;
+    height: 3rem;
+    overflow: visible;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.sv-wave path { vector-effect: non-scaling-stroke; }
+.sv-wave__axis { stroke: var(--sv-ink-soft); stroke-width: 1.6; stroke-dasharray: 1 7; }
+.sv-wave__span { stroke: var(--sv-bordeaux); stroke-width: 5; opacity: 0.7; }
+
+/* ---------- Doodles en fond de frise ---------- */
+
+.sv-doodles { position: absolute; top: 0; bottom: 0; left: var(--sv-x); width: var(--sv-w); pointer-events: none; }
+.sv-doodles--mirror { transform: scaleX(-1); }
+
+.sv-doodle {
+    position: absolute;
+    left: var(--sv-x);
+    top: var(--sv-y);
+    width: calc(var(--sv-size) * 1.2);
+    height: calc(var(--sv-size) * 1.03);
+    fill: none;
+    stroke: var(--sv-ink-soft);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.3;
+    transform: scaleX(var(--sv-flip));
+}
+
+/* Trait d'épaisseur constante, quelle que soit la taille du dessin */
+symbol path, symbol circle { vector-effect: non-scaling-stroke; }
+
+.sv-dot {
+    position: absolute;
+    left: var(--sv-x);
+    top: calc(var(--sv-dy) * 1rem);
+    z-index: 2;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin: -0.375rem 0 0 -0.375rem;
+    border-radius: 50%;
+    background: var(--sv-bordeaux);
+    box-shadow: 0 0 0 3px var(--sv-cream);
+}
+
+/* ---------- Pastilles de moments ---------- */
+
+.sv-pin {
+    position: absolute;
+    left: var(--sv-x);
+    z-index: calc(10 - var(--sv-tier));  /* les pastilles proches de l'axe passent devant les fils des lointaines */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 8rem;
+    margin-left: -4rem;
+    color: var(--sv-ink);
+    text-align: center;
+    text-decoration: none;
+}
+
+.sv-pin--haut { bottom: calc(1.2rem + var(--sv-tier) * var(--sv-step) - var(--sv-dy) * 1rem); }
+.sv-pin--bas  { top: calc(1.2rem + var(--sv-tier) * var(--sv-step) + var(--sv-dy) * 1rem); }
+
+/* Le fil pointillé qui relie la pastille à l'axe */
+.sv-pin::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    height: calc(1.2rem + var(--sv-tier) * var(--sv-step));
+    border-left: 1.5px dotted var(--sv-ink-soft);
+}
+
+.sv-pin--haut::after { top: 100%; }
+.sv-pin--bas::after  { bottom: 100%; }
+
+.sv-pin:hover, .sv-pin:focus-visible, .sv-pin.is-open { z-index: 30; color: var(--sv-ink); }
+
+.sv-pin__cover {
+    display: block;
+    width: 4.9rem;
+    height: 5.5rem;
+    padding: 0.28rem 0.28rem 0.95rem;
+    background: var(--sv-paper);
+    box-shadow: var(--sv-shadow-paper);
+    transform: rotate(var(--sv-tilt));
+    transition: transform 0.4s var(--sv-ease), box-shadow 0.4s var(--sv-ease);
+}
+
+.sv-pin__cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.sv-pin__initial {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--sv-cream-deep);
+    color: var(--sv-bordeaux);
+    font-family: var(--sv-font-title);
+    font-size: 2.2rem;
+    font-style: italic;
+    font-weight: 300;
+}
+
+.sv-pin:hover .sv-pin__cover,
+.sv-pin:focus-visible .sv-pin__cover,
+.sv-pin.is-open .sv-pin__cover {
+    transform: rotate(0deg) translateY(-4px) scale(1.07);
+    box-shadow: var(--sv-shadow-lifted);
+}
+
+.sv-pin__title {
+    display: -webkit-box;
+    width: 100%;
+    margin-top: 0.3rem;
+    overflow: hidden;
+    font-family: var(--sv-font-title);
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.1;
+    text-shadow: 0 0 5px var(--sv-cream), 0 0 5px var(--sv-cream), 0 0 3px var(--sv-cream);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* ---------- Détail au survol ---------- */
+
+.sv-pin__card {
+    position: absolute;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    width: 17rem;
+    padding: 0.9rem 1.1rem 1rem;
+    background: var(--sv-paper);
+    box-shadow: var(--sv-shadow-lifted);
+    text-align: left;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(8px) rotate(-0.8deg);
+    transition: opacity 0.3s var(--sv-ease), transform 0.35s var(--sv-ease), visibility 0s 0.3s;
+}
+
+.sv-pin--haut .sv-pin__card { top: 0; }
+.sv-pin--bas  .sv-pin__card { bottom: 0; }
+.sv-pin__card { left: calc(100% + 0.6rem); }
+.sv-pin--flip .sv-pin__card { right: calc(100% + 0.6rem); left: auto; }
+
+.sv-pin:hover .sv-pin__card,
+.sv-pin:focus-visible .sv-pin__card,
+.sv-pin.is-open .sv-pin__card {
+    visibility: visible;
+    opacity: 1;
+    transform: rotate(-0.8deg);
+    transition: opacity 0.3s var(--sv-ease), transform 0.35s var(--sv-ease), visibility 0s;
+}
+
+.sv-pin__card-title { font-family: var(--sv-font-title); font-size: 1.5rem; font-weight: 500; line-height: 1.05; }
+.sv-pin__card-dates { font-family: var(--sv-font-hand); font-size: 1.2rem; line-height: 1.1; color: var(--sv-bordeaux); }
+.sv-pin__card-place { font-family: var(--sv-font-title); font-size: 1.05rem; font-style: italic; color: var(--sv-ink-soft); }
+.sv-pin__card-text { margin-top: 0.2rem; font-size: 0.88rem; line-height: 1.45; }
+.sv-pin__card-note { font-size: var(--sv-text-small); font-style: italic; color: var(--sv-ink-soft); }
+
+.sv-pin__card-faces { display: flex; flex-wrap: wrap; margin-top: 0.35rem; }
+.sv-pin__card-faces .sv-face { margin-right: -0.35rem; }
+
+/* ---------- Téléphone : sélecteur d'année en bandeau, frise qui défile ---------- */
+
+@media (max-width: 48rem) {
+    .sv-timeline { grid-template-columns: minmax(0, 1fr); }
+
+    .sv-roll {
+        display: flex;
+        height: auto;
+        gap: var(--sv-space-md);
+        overflow-x: auto;
+        perspective: none;
+        touch-action: auto;
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+
+    .sv-roll::after { display: none; }
+
+    .sv-roll__year {
+        position: static;
+        flex: none;
+        height: auto;
+        margin: 0;
+        font-size: 1.6rem;
+        opacity: 1;
+        transform: none;
+    }
+
+    .sv-roll__year.is-selected { border-bottom: 2px solid var(--sv-bordeaux); }
+    .sv-frise__track { width: calc(var(--sv-years) * max(100cqw, 1300px)); }
+    .sv-frise { overscroll-behavior-x: auto; }
+    .sv-doodle { opacity: 0.28; }
+}
+
+.sv-timeline__empty { margin: var(--sv-space-md) 0 0; text-align: center; font-family: var(--sv-font-hand); font-size: 1.5rem; color: var(--sv-ink-soft); }
