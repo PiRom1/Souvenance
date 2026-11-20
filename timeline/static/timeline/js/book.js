@@ -8,6 +8,8 @@
     const paper = book.querySelector(".sv-book__paper");
     const prev = book.querySelector("[data-prev]");
     const next = book.querySelector("[data-next]");
+    const first = book.querySelector("[data-first]");
+    const last = book.querySelector("[data-last]");
     const counter = document.querySelector("[data-counter]");
 
     let current = 0;     // numéro de la double page affichée (ou de la page, sur téléphone)
@@ -26,13 +28,50 @@
         total = Math.ceil(columns / perView);
     }
 
+    // La première double page doit tenir dans sa hauteur, sinon les têtes des participants passent sur la page d'à côté.
+    // Du moins au plus radical (le dessin de la page de droite, une fois retiré, ne revient pas) :
+    // 1. photo de couverture sur la page de titre ; 2. photo à la place du dessin, sur la page de droite ;
+    // 3. idem, titre et têtes resserrés ; 4. plus de photo du tout.
+    const titlePage = flow.querySelector(".sv-titlepage");
+    const descPage = flow.querySelector(".sv-descpage");
+    const cover = flow.querySelector(".sv-titlepage__cover");
+
+    // Hauteur naturelle d'une page de garde (sans la contrainte de la colonne) comparée à la hauteur dont on dispose
+    function fits(page) {
+        const flowHeight = flow.style.height, pageHeight = page.style.height;
+        flow.style.height = "100000px";
+        page.style.height = "auto";
+        const natural = page.offsetHeight;
+        flow.style.height = flowHeight;
+        page.style.height = pageHeight;
+        return natural <= clip.clientHeight * 0.98;
+    }
+
+    function placeCover(level) {
+        cover.hidden = level === 4;
+        flow.classList.toggle("sv-book__flow--tight", level >= 3);
+        descPage.classList.toggle("sv-descpage--cover", level >= 2);
+        if (level === 2 || level === 3) descPage.append(cover); else titlePage.prepend(cover);
+    }
+
+    function fitCover() {
+        if (!cover || !titlePage || !descPage) return;
+        for (let level = 1; level < 4; level++) {
+            placeCover(level);
+            if (fits(titlePage) && fits(descPage)) return;
+        }
+        placeCover(4);
+    }
+
     function render() {
         flow.style.transform = `translateX(${-current * step}px)`;
         prev.disabled = current === 0;
         next.disabled = current >= total - 1;
-        const first = current * perView + 1;
-        const last = Math.min(columns, first + perView - 1);
-        counter.textContent = perView === 1 || first === last ? `Page ${first} sur ${columns}` : `Pages ${first} et ${last} sur ${columns}`;
+        first.disabled = current === 0;
+        last.disabled = current >= total - 1;
+        const firstPage = current * perView + 1;
+        const lastPage = Math.min(columns, firstPage + perView - 1);
+        counter.textContent = perView === 1 || firstPage === lastPage ? `Page ${firstPage} sur ${columns}` : `Pages ${firstPage} et ${lastPage} sur ${columns}`;
     }
 
     const DUREE_PAGE = 1100;
@@ -183,6 +222,7 @@
 
     function refresh() {
         book.classList.add("sv-book--resizing");
+        fitCover();
         measure();
         current = Math.min(current, total - 1);
         render();
@@ -192,6 +232,8 @@
 
     prev.addEventListener("click", () => go(current - 1));
     next.addEventListener("click", () => go(current + 1));
+    first.addEventListener("click", () => go(0));
+    last.addEventListener("click", () => go(total - 1));
 
     document.addEventListener("keydown", event => {
         if (event.target.matches("input, select, textarea")) return;

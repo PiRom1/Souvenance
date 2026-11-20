@@ -18,7 +18,7 @@
 .sv-bookbar__spacer { margin-right: auto; }
 
 .sv-book {
-    --sv-gutter: 4.6rem;
+    --sv-gutter: clamp(2rem, 7vh, 4.6rem);   /* la reliure rétrécit avec la fenêtre */
     --sv-sheet: linear-gradient(90deg, #f3e9d4 0%, #fbf6ea 5%, #fdf9ee 45%, #ede3cd 50%, #fdf9ee 55%, #fbf6ea 95%, #f3e9d4 100%);
     position: relative;
     width: min(100%, calc((100vh - 14rem) * 1.5));
@@ -68,8 +68,8 @@
     bottom: 0;
     left: 50%;
     z-index: 3;
-    width: 4.4rem;
-    margin-left: -2.2rem;
+    width: calc(var(--sv-gutter) - 0.2rem);
+    margin-left: calc((var(--sv-gutter) - 0.2rem) / -2);
     pointer-events: none;
     background: linear-gradient(90deg, transparent, rgba(59, 42, 32, 0.12) 42%, rgba(59, 42, 32, 0.26) 50%, rgba(59, 42, 32, 0.12) 58%, transparent);
 }
@@ -87,7 +87,7 @@
     column-gap: var(--sv-gutter);
     column-fill: auto;
     color: var(--sv-ink);
-    font-size: clamp(1.05rem, 3.4cqh, 1.6rem);
+    font-size: clamp(0.7rem, 3.4cqh, 1.6rem);
     transition: transform 0.75s cubic-bezier(0.65, 0.05, 0.25, 1);
 }
 
@@ -114,8 +114,8 @@
     bottom: 0;
     left: 50%;
     z-index: 3;
-    width: 4.4rem;
-    margin-left: -2.2rem;
+    width: calc(var(--sv-gutter) - 0.2rem);
+    margin-left: calc((var(--sv-gutter) - 0.2rem) / -2);
     pointer-events: none;
     background: linear-gradient(90deg, transparent, rgba(59, 42, 32, 0.12) 42%, rgba(59, 42, 32, 0.26) 50%, rgba(59, 42, 32, 0.12) 58%, transparent);
 }
@@ -194,6 +194,31 @@
 .sv-book__nav:hover:not(:disabled) { transform: scale(1.08); }
 .sv-book__nav:disabled { opacity: 0.3; cursor: default; }
 
+/* Retour au début et saut à la fin, dans les coins du bas des pages */
+.sv-book__edge {
+    position: absolute;
+    bottom: 0.5rem;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--sv-ink-soft);
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.25s, background 0.25s;
+}
+
+.sv-book__edge svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sv-book__edge--first { left: 1rem; }
+.sv-book__edge--last { right: 1rem; }
+.sv-book__edge:hover:not(:disabled) { opacity: 1; background: rgba(59, 42, 32, 0.08); }
+.sv-book__edge:disabled { opacity: 0; pointer-events: none; }
+
 .sv-book__counter {
     margin: var(--sv-space-sm) 0 0;
     text-align: center;
@@ -221,7 +246,7 @@
     text-align: center;
 }
 
-.sv-titlepage__cover { width: 56%; margin: 0 0 0.8em; }
+.sv-titlepage__cover { width: min(56%, 10em); margin: 0 0 0.8em; }   /* en em : la couverture rétrécit avec la page */
 .sv-titlepage__cover .sv-photo__link { aspect-ratio: 4 / 3; }
 
 .sv-titlepage__title {
@@ -268,6 +293,17 @@
 }
 
 .sv-descpage__doodle { width: 62%; align-self: center; margin-top: auto; }
+
+/* Quand la page de titre manque de place, la photo de couverture prend la place du dessin (voir book.js) */
+.sv-descpage--cover .sv-descpage__doodle { display: none; }
+.sv-descpage .sv-titlepage__cover { align-self: center; margin: auto 0 0; }
+.sv-titlepage__cover[hidden] { display: none; }
+
+/* Dernier recours (voir book.js) : titre et têtes resserrés */
+.sv-book__flow--tight .sv-titlepage { gap: 0.25em; }
+.sv-book__flow--tight .sv-titlepage__title { font-size: 2em; }
+.sv-book__flow--tight .sv-titlepage__faces { margin-top: 0.3em; }
+.sv-book__flow--tight .sv-titlepage__faces .sv-face--large { width: 2.1em; height: 2.1em; }
 
 /* ---------- Notes ---------- */
 
