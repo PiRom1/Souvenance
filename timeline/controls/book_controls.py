@@ -1,4 +1,6 @@
-from timeline.models import Image
+from django.templatetags.static import static
+
+from timeline.models import Image, User
 
 CADRES = ["polaroid", "ruban", "coins", "croquis"]
 RATIOS = ["4-3", "1-1", "3-4"]
@@ -52,3 +54,12 @@ def photos_du_moment(moment):
     images = [_decorer_image(image, image.note_id) for image in images]
     tagues = {user.username: user for image in images for user in image.tags}
     return images, [tagues[username] for username in sorted(tagues)]
+
+
+def membres():
+    """
+    Tous les membres de la bande, pour la modification des tags dans la visionneuse
+    """
+
+    return [{"id": user.id, "username": user.username, "nom": str(user), "avatar": static(f"timeline/img/{user.username}.png")}
+            for user in User.objects.order_by("username")]

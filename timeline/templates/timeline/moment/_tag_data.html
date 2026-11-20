@@ -1,0 +1,3 @@
+{# Données pour modifier les tags dans la visionneuse : jeton CSRF et liste des membres #}
+<div hidden>{% csrf_token %}</div>
+{{ membres|json_script:"sv-membres" }}

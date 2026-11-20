@@ -10,6 +10,7 @@
 {% endblock %}
 
 {% block content %}
+{% include "timeline/moment/_tag_data.html" %}
 {% include "timeline/app/_doodle_symbols.html" %}
 
 <div class="sv-bookbar">
@@ -34,7 +35,7 @@
                             {% endif %}
                             <h1 class="sv-titlepage__title">{{ moment.nom }}</h1>
                             <p class="sv-titlepage__dates">
-                                {% if moment.date_fin %}Du {{ moment.date_debut|date:"j F Y" }} au {{ moment.date_fin|date:"j F Y" }}{% else %}Le {{ moment.date_debut|date:"j F Y" }}{% endif %}
+                                {% if not moment.est_ponctuel %}Du {{ moment.date_debut|date:"j F Y" }} au {{ moment.date_fin|date:"j F Y" }}{% else %}Le {{ moment.date_debut|date:"j F Y" }}{% endif %}
                             </p>
                             {% if moment.lieu %}<p class="sv-titlepage__place">{{ moment.lieu }}</p>{% endif %}
                             <div class="sv-titlepage__faces">

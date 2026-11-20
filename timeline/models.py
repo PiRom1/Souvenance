@@ -50,7 +50,7 @@ class Moment(models.Model):
 
     @property
     def est_ponctuel(self):
-        return self.date_fin is None
+        return self.date_fin is None or self.date_fin == self.date_debut
 
     def __str__(self):
         return f"{self.nom} ({self.date_debut})"

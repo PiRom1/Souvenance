@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from timeline.controls.book_controls import photos_du_moment, preparer_livre
+from timeline.controls.book_controls import membres, photos_du_moment, preparer_livre
 from timeline.controls.image_controls import set_thumbnail
 from timeline.controls.moment_controls import add_revision, sync_participants
 from timeline.forms import MomentForm
@@ -24,6 +24,7 @@ def moment(request, id):
         "moment": moment,
         "participants": participants,
         "est_participant": request.user in participants,
+        "membres": membres(),
         **livre,
     }
     return render(request, "timeline/moment/moment.html", context)
@@ -38,7 +39,7 @@ def moment_photos(request, id):
     moment = get_object_or_404(Moment.objects.select_related("thumbnail"), id=id)
     images, personnes_taguees = photos_du_moment(moment)
     est_participant = moment.users_for_moment.filter(user=request.user).exists()
-    context = {"moment": moment, "images": images, "personnes_taguees": personnes_taguees, "est_participant": est_participant}
+    context = {"moment": moment, "images": images, "personnes_taguees": personnes_taguees, "est_participant": est_participant, "membres": membres()}
     return render(request, "timeline/moment/photos.html", context)
 
 

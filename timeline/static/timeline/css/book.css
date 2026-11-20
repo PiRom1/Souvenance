@@ -481,7 +481,7 @@
 @keyframes sv-fade { from { opacity: 0; } }
 
 .sv-lightbox__figure { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; min-height: 0; max-width: 100%; margin: 0; }
-.sv-lightbox__img { min-height: 0; max-width: 100%; max-height: calc(100vh - 17rem); object-fit: contain; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5); }
+.sv-lightbox__img { min-height: 0; max-width: 100%; max-height: calc(100vh - 20rem); object-fit: contain; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5); }
 
 .sv-lightbox__caption { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; color: var(--sv-cream); text-align: center; }
 .sv-lightbox__legend { margin: 0; font-family: var(--sv-font-hand); font-size: 1.5rem; line-height: 1.1; }
@@ -559,3 +559,11 @@
     .sv-note__photos--deux { --sv-photo-width: 48%; }
     .sv-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem 1rem; }
 }
+
+.sv-lightbox__edit { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.sv-lightbox__people { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 0.8rem; }
+.sv-lightbox__people.is-saving { opacity: 0.6; pointer-events: none; }
+.sv-lightbox__person { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.7rem 0.2rem 0.2rem; border: 2px solid transparent; border-radius: 99px; background: transparent; color: var(--sv-cream); font-family: var(--sv-font-hand); font-size: 1.3rem; cursor: pointer; opacity: 0.45; filter: grayscale(0.7); }
+.sv-lightbox__person .sv-face { width: 2.9rem; height: 2.9rem; }
+.sv-lightbox__person:hover { opacity: 0.8; }
+.sv-lightbox__person.is-on { border-color: var(--sv-cream); opacity: 1; filter: none; }

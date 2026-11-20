@@ -74,7 +74,7 @@
                             <span class="sv-pin__card">
                                 <span class="sv-pin__card-title">{{ pin.moment.nom }}</span>
                                 <span class="sv-pin__card-dates">
-                                    Le {{ pin.moment.date_debut|date:"j F Y" }}{% if pin.moment.date_fin %}, jusqu'au {{ pin.moment.date_fin|date:"j F Y" }}{% endif %}
+                                    {% if pin.moment.est_ponctuel %}Le {{ pin.moment.date_debut|date:"j F Y" }}{% else %}Du {{ pin.moment.date_debut|date:"j F Y" }} au {{ pin.moment.date_fin|date:"j F Y" }}{% endif %}
                                 </span>
                                 {% if pin.moment.lieu %}<span class="sv-pin__card-place">{{ pin.moment.lieu }}</span>{% endif %}
                                 {% if pin.moment.description %}<span class="sv-pin__card-text">{{ pin.moment.description|truncatewords:26 }}</span>{% endif %}

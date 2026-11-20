@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from timeline.views import app_views, moment_views, note_views
+from timeline.views import app_views, image_views, moment_views, note_views
 
 urlpatterns = [
     # Auth
@@ -21,4 +21,7 @@ urlpatterns = [
     # Note
     path("moment/<int:moment_id>/note/ajouter", note_views.note_add, name="note_add"),
     path("note/<int:id>/modifier", note_views.note_edit, name="note_edit"),
+
+    # Image
+    path("image/<int:id>/tags", image_views.image_tags, name="image_tags"),
 ]
