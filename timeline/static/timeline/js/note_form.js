@@ -231,7 +231,10 @@ async function readExifDate(file) {
         const megabytes = bytes => (bytes / (1024 * 1024)).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0).replace(".", ",");
         const plural = (count, word) => `${count} ${word}${count > 1 ? "s" : ""}`;
 
-        function setBusy(busy) {
+        let busy = false;
+
+        function setBusy(value) {
+            busy = value;
             overlay.hidden = !busy;
             submitButtons.forEach(button => { button.disabled = busy; });
         }
@@ -262,6 +265,10 @@ async function readExifDate(file) {
         }
 
         form.addEventListener("submit", event => {
+            if (busy) {         // un envoi est déjà parti : on ignore les clics et Entrée supplémentaires
+                event.preventDefault();
+                return;
+            }
             if (event.defaultPrevented) return;
             const files = slides.filter(slide => slide.file).map(slide => slide.file);
             setBusy(true);

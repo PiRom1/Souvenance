@@ -74,3 +74,26 @@
         check();
     }
 })();
+
+/* Un seul envoi à la fois : les clics supplémentaires sur « Créer / Enregistrer » ne doivent pas créer de doublon */
+(() => {
+    const form = document.querySelector("form[data-warn-leave]");
+    if (!form) return;
+    const button = form.querySelector("button[type=submit]");
+    let sending = false;
+
+    form.addEventListener("submit", event => {
+        if (sending) {
+            event.preventDefault();
+            return;
+        }
+        sending = true;
+        if (button) button.disabled = true;
+    });
+
+    // Retour arrière depuis la page suivante : le formulaire doit être de nouveau utilisable
+    window.addEventListener("pageshow", () => {
+        sending = false;
+        if (button) button.disabled = false;
+    });
+})();
