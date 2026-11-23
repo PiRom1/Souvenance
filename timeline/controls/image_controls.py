@@ -2,6 +2,7 @@ import io
 import os
 from datetime import datetime, time
 
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from PIL import Image as PILImage
@@ -79,14 +80,35 @@ def date_par_defaut(moment):
     return timezone.make_aware(datetime.combine(moment.date_debut, time(12, 0)))
 
 
-def create_images(note, fichiers, details):
+DUREE_PROGRESSION = 3600  # secondes
+
+
+def noter_progression(jeton, fait, total):
+    """
+    Note où en est le traitement des photos d'un envoi (le navigateur interroge ce jeton pour sa barre)
+    """
+
+    if jeton:
+        cache.set(f"progression-photos:{jeton}", {"fait": fait, "total": total}, DUREE_PROGRESSION)
+
+
+def lire_progression(jeton):
+    """
+    Avancement du traitement des photos d'un envoi : {"fait": n, "total": n}, à zéro tant que rien n'est noté
+    """
+
+    return cache.get(f"progression-photos:{jeton}") or {"fait": 0, "total": 0}
+
+
+def create_images(note, fichiers, details, jeton=None):
     """
     Enregistre les photos téléversées sur une note avec leurs détails (un dict nom/legende/date_prise/tags
     par fichier, dans le même ordre) et crée l'aperçu léger de chacune, puis donne une vignette au moment s'il
-    n'en a pas
+    n'en a pas. `jeton` identifie l'envoi pour suivre sa progression.
     """
 
-    for fichier, detail in zip(fichiers, details):
+    noter_progression(jeton, 0, len(fichiers))
+    for fait, (fichier, detail) in enumerate(zip(fichiers, details), start=1):
         # Avant compression : l'EXIF y est perdu. La date proposée par défaut (premier jour du moment) cède devant
         # la vraie date de prise de vue quand la photo en a une
         date_exif = lire_date_prise(fichier)
@@ -101,6 +123,7 @@ def create_images(note, fichiers, details):
         )
         create_miniature(image)
         sync_tags(image, detail["tags"])
+        noter_progression(jeton, fait, len(fichiers))
     ensure_thumbnail(note.moment)
 
 

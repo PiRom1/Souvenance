@@ -164,6 +164,30 @@
         const thumb = figure.querySelector(".sv-photo__thumb, .sv-photo__badge");
         if (thumb) action.append(thumb.cloneNode(true));
         else if (figure.dataset.thumb === "0") action.append(text("p", "sv-lightbox__hint", "Seuls les participants du moment peuvent choisir la vignette."));
+
+        if (figure.dataset.imageId && document.querySelector("[name=csrfmiddlewaretoken]")) {
+            const remove = text("button", "sv-lightbox__delete", "Supprimer la photo");
+            remove.type = "button";
+            remove.addEventListener("click", deletePhoto);
+            action.append(remove);
+        }
+    }
+
+    // Supprime la photo affichée pour tout le monde, après confirmation, puis recharge la page (livre et vignette à jour)
+    async function deletePhoto() {
+        const figure = items[index].closest("figure");
+        if (!confirm("Supprimer définitivement cette photo ? Elle disparaîtra pour tout le monde, sans retour possible.")) return;
+        try {
+            const response = await fetch(`/image/${figure.dataset.imageId}/supprimer`, {
+                method: "POST",
+                headers: { "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value },
+            });
+            if (!response.ok) throw new Error(response.status);
+        } catch {
+            alert("La photo n'a pas pu être supprimée, réessaie.");
+            return;
+        }
+        location.reload();
     }
 
     // « Choisir comme vignette » sans quitter la photo : on envoie le formulaire en arrière-plan puis on met à jour la page

@@ -1,7 +1,10 @@
+from datetime import timedelta
+
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.functions import Coalesce
 
-from timeline.models import Moment, MomentRevision, UserForMoment
+from timeline.models import Image, Moment, MomentRevision, UserForMoment
 
 
 def sync_participants(moment, users):
@@ -41,3 +44,28 @@ def filter_moments(filtres):
     for user in filtres.get("participants") or []:
         moments = moments.filter(users_for_moment__user=user)
     return moments
+
+
+def delete_moment(moment):
+    """
+    Supprime un moment, ses notes et leurs photos (les photos ne sont pas liées en cascade, et leurs fichiers
+    partent avec elles)
+    """
+
+    with transaction.atomic():
+        Image.objects.filter(note__moment=moment).delete()
+        moment.delete()
+
+
+ECART_MOMENT_PROCHE = timedelta(days=7)
+
+
+def moments_proches(debut, fin):
+    """
+    Moments dont la période chevauche, à une semaine près, celle donnée (fin vide : moment ponctuel)
+    """
+
+    fin = fin or debut
+    return (Moment.objects.annotate(fin_effective=Coalesce("date_fin", "date_debut"))
+            .filter(fin_effective__gte=debut - ECART_MOMENT_PROCHE, date_debut__lte=fin + ECART_MOMENT_PROCHE)
+            .order_by("date_debut"))

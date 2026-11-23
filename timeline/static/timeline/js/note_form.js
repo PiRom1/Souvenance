@@ -216,4 +216,114 @@ async function readExifDate(file) {
     });
 
     refresh(0);
+
+    // Envoi avec barre de progression : le formulaire part en XHR (seul moyen de suivre l'envoi des octets).
+    // Sans nouvelle photo, c'est un envoi classique avec une simple roue d'attente.
+    const form = input.closest("form");
+    const overlay = document.querySelector("[data-sending-overlay]");
+    if (form && overlay) {
+        const title = overlay.querySelector("[data-sending-title]");
+        const progress = overlay.querySelector("[data-sending-progress]");
+        const track = overlay.querySelector("[data-sending-track]");
+        const bar = overlay.querySelector("[data-sending-bar]");
+        const detail = overlay.querySelector("[data-sending-detail]");
+        const submitButtons = form.querySelectorAll("button[type=submit]");
+        const megabytes = bytes => (bytes / (1024 * 1024)).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0).replace(".", ",");
+        const plural = (count, word) => `${count} ${word}${count > 1 ? "s" : ""}`;
+
+        function setBusy(busy) {
+            overlay.hidden = !busy;
+            submitButtons.forEach(button => { button.disabled = busy; });
+        }
+
+        function showProgress(done, total, count, size) {
+            const percent = Math.min(100, Math.floor(done / total * 100));
+            bar.style.width = `${percent}%`;
+            track.setAttribute("aria-valuenow", percent);
+            detail.textContent = `${percent} % · ${Math.floor(count * done / total)} sur ${plural(count, "photo")} (${megabytes(size * done / total)} sur ${megabytes(size)} Mo)`;
+        }
+
+        let polling = null;
+        const stopPolling = () => { clearInterval(polling); polling = null; };
+
+        function showProcessing(done) {
+            const total = Number(overlay.dataset.count);
+            const percent = Math.min(100, Math.floor(done / total * 100));
+            bar.style.width = `${percent}%`;
+            track.setAttribute("aria-valuenow", percent);
+            detail.textContent = `${percent} % · ${done} sur ${plural(total, "photo")} traitée${total > 1 ? "s" : ""}`;
+        }
+
+        function fail() {
+            stopPolling();
+            setBusy(false);
+            form.dispatchEvent(new Event("change", { bubbles: true }));    // le formulaire n'est pas enregistré
+            alert("L'envoi a échoué (connexion coupée ou délai dépassé). Vérifie que la note n'a pas été publiée, puis réessaie.");
+        }
+
+        form.addEventListener("submit", event => {
+            if (event.defaultPrevented) return;
+            const files = slides.filter(slide => slide.file).map(slide => slide.file);
+            setBusy(true);
+            if (!files.length) {
+                title.textContent = "Enregistrement de ta note…";
+                progress.hidden = true;
+                return;      // envoi classique
+            }
+
+            event.preventDefault();
+            const size = files.reduce((total, file) => total + file.size, 0);
+            title.textContent = `Envoi de ${plural(files.length, "photo")} (${megabytes(size)} Mo)…`;
+            progress.hidden = false;
+            overlay.dataset.count = files.length;
+            showProgress(0, 1, files.length, size);
+
+            // Identifiant de l'envoi : le serveur y note le traitement des photos, qu'on interroge pour la 2e partie de la barre
+            const token = crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx".replace(/x/g, () => (Math.random() * 16 | 0).toString(16));
+            const data = new FormData(form);
+            data.append("progress_token", token);
+
+            const request = new XMLHttpRequest();
+            request.open("POST", form.action);
+            request.upload.addEventListener("progress", progressEvent => {
+                if (progressEvent.lengthComputable) showProgress(progressEvent.loaded, progressEvent.total, files.length, size);
+            });
+            // Tout est parti : le serveur compresse les photos et crée leurs aperçus, ce qui prend encore un moment.
+            // La barre repart de zéro et suit le nombre de photos traitées
+            request.upload.addEventListener("load", () => {
+                title.textContent = `Traitement de ${plural(files.length, "photo")}…`;
+                showProcessing(0);
+                const url = overlay.dataset.progressUrl.replace("00000000-0000-0000-0000-000000000000", token);
+                polling = setInterval(async () => {
+                    try {
+                        const response = await fetch(url, { headers: { Accept: "application/json" } });
+                        if (!response.ok) return;
+                        const state = await response.json();
+                        if (state.total) showProcessing(state.fait);
+                    } catch (error) {
+                        /* un sondage manqué n'est pas grave : le suivant rattrape */
+                    }
+                }, 700);
+            });
+            request.addEventListener("load", () => {
+                stopPolling();
+                if (request.responseURL && request.responseURL !== form.action && request.status === 200) {
+                    location.href = request.responseURL;       // note publiée : le serveur a redirigé vers le moment
+                } else if (request.status === 200 || request.status === 400) {
+                    // Formulaire refusé : on affiche la page renvoyée avec ses messages d'erreur
+                    document.open();
+                    document.write(request.responseText);
+                    document.close();
+                } else {
+                    fail();
+                }
+            });
+            request.addEventListener("error", fail);
+            request.addEventListener("abort", fail);
+            request.send(data);
+        });
+
+        // Retour arrière depuis la page suivante : on ne doit pas retrouver l'écran d'attente
+        window.addEventListener("pageshow", () => setBusy(false));
+    }
 })();

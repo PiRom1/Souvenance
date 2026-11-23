@@ -1,0 +1,20 @@
+{% extends "timeline/base.html" %}
+
+{% block title %}{{ titre }} — Souvenance{% endblock %}
+{% block page_class %}sv-page--form{% endblock %}
+
+{% block content %}
+<div class="sv-paper sv-momentform">
+    <header class="sv-momentform__head">
+        <h1 class="sv-momentform__title">{{ titre }}</h1>
+        <p class="sv-momentform__intro">Supprimer définitivement {{ objet }} ? {{ details }} Impossible de revenir en arrière.</p>
+    </header>
+    <form class="sv-momentform__form" method="post">
+        {% csrf_token %}
+        <div class="sv-momentform__actions">
+            <a class="sv-btn sv-btn--ghost" href="{{ retour }}">Annuler</a>
+            <button class="sv-btn sv-btn--large sv-btn--danger" type="submit">Supprimer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

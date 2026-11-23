@@ -33,4 +33,44 @@
         start.addEventListener("change", sync);
         end.min = start.value || "";
     }
+
+    // À la création : prévient (sans bloquer) si un moment existe déjà à une semaine près
+    const form = document.querySelector("[data-nearby-url]");
+    const banner = document.querySelector("[data-nearby]");
+    if (form && banner && start && end) {
+        let timer, request = 0;
+        const check = async () => {
+            if (!start.value) { banner.hidden = true; return; }
+            const mine = ++request;
+            try {
+                const query = new URLSearchParams({ du: start.value, au: end.value || start.value });
+                const response = await fetch(`${form.dataset.nearbyUrl}?${query}`);
+                if (!response.ok || mine !== request) return;
+                const { moments } = await response.json();
+                banner.replaceChildren();
+                if (!moments.length) { banner.hidden = true; return; }
+                const intro = document.createElement("strong");
+                intro.textContent = moments.length > 1 ? "Des moments proches existent déjà, c'est peut-être un doublon :" : "Un moment proche existe déjà, c'est peut-être un doublon :";
+                const list = document.createElement("ul");
+                moments.forEach(moment => {
+                    const item = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = moment.url;
+                    link.target = "_blank";
+                    link.rel = "noopener";
+                    link.textContent = moment.nom;
+                    item.append(link, ` (${moment.periode})`);
+                    list.append(item);
+                });
+                banner.append(intro, list);
+                banner.hidden = false;
+            } catch (error) {
+                banner.hidden = true;
+            }
+        };
+        const schedule = () => { clearTimeout(timer); timer = setTimeout(check, 300); };
+        start.addEventListener("change", schedule);
+        end.addEventListener("change", schedule);
+        check();
+    }
 })();

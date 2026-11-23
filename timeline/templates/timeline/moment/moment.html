@@ -17,7 +17,7 @@
     <a class="sv-btn sv-btn--ghost" href="{% url 'home' %}?annee={{ moment.date_debut.year }}">Retour à la frise</a>
     <span class="sv-bookbar__spacer"></span>
     <a class="sv-btn sv-btn--ghost" href="{% url 'moment_photos' moment.id %}">Photothèque</a>
-    {% if moment.createur == user %}<a class="sv-btn sv-btn--ghost" href="{% url 'moment_edit' moment.id %}">Modifier le moment</a>{% endif %}
+    <a class="sv-btn sv-btn--ghost" href="{% url 'moment_edit' moment.id %}">Modifier le moment</a>
     <a class="sv-btn" href="{% url 'note_add' moment.id %}">Ajouter une note</a>
 </div>
 

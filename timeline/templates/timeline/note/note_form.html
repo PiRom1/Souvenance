@@ -4,7 +4,10 @@
 {% block title %}{{ titre }} — Souvenance{% endblock %}
 {% block page_class %}sv-page--form{% endblock %}
 
-{% block head %}<script src="{% static 'timeline/js/note_form.js' %}" defer></script>{% endblock %}
+{% block head %}
+    <script src="{% static 'timeline/js/note_form.js' %}" defer></script>
+    <script src="{% static 'timeline/js/leave_warning.js' %}" defer></script>
+{% endblock %}
 
 {% block content %}
 <div class="sv-paper sv-momentform sv-noteform">
@@ -13,7 +16,7 @@
         <p class="sv-momentform__intro">dans « {{ moment.nom }} »</p>
     </header>
 
-    <form class="sv-momentform__form" method="post" enctype="multipart/form-data" novalidate>
+    <form class="sv-momentform__form" method="post" enctype="multipart/form-data" novalidate data-warn-leave>
         {% csrf_token %}
         {{ form.non_field_errors }}
         {% if formset %}{{ formset.management_form }}{{ formset.non_form_errors }}{% endif %}
@@ -99,9 +102,24 @@
         </template>
 
         <div class="sv-momentform__actions">
-            <a class="sv-btn sv-btn--ghost" href="{% url 'moment' moment.id %}">Annuler</a>
+            {% if note %}<a class="sv-btn sv-btn--ghost sv-btn--danger" data-leave-link href="{% url 'note_delete' note.id %}">Supprimer la note</a>{% endif %}
+            <a class="sv-btn sv-btn--ghost" data-leave-link href="{% url 'moment' moment.id %}">Annuler</a>
             <button class="sv-btn sv-btn--large" type="submit">{% if note %}Enregistrer les changements{% else %}Publier la note{% endif %}</button>
         </div>
     </form>
+</div>
+
+<div class="sv-sending" data-sending-overlay data-progress-url="{% url 'note_progress' '00000000-0000-0000-0000-000000000000' %}" hidden role="alert" aria-live="assertive">
+    <div class="sv-sending__box">
+        <span class="sv-sending__spinner" aria-hidden="true"></span>
+        <p class="sv-sending__title" data-sending-title>Envoi en cours…</p>
+        <div class="sv-sending__progress" data-sending-progress hidden>
+            <div class="sv-sending__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-sending-track>
+                <div class="sv-sending__bar" data-sending-bar></div>
+            </div>
+            <p class="sv-sending__detail" data-sending-detail></p>
+        </div>
+        <p class="sv-sending__hint">Ne ferme pas la page, ça peut prendre un moment.</p>
+    </div>
 </div>
 {% endblock %}

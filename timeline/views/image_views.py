@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
 from django.views.decorators.http import require_POST
 
-from timeline.controls.image_controls import sync_tags
+from timeline.controls.image_controls import ensure_thumbnail, sync_tags
 from timeline.models import Image, User
 
 
@@ -22,3 +22,20 @@ def image_tags(request, id):
         {"username": user.username, "nom": str(user), "avatar": static(f"timeline/img/{user.username}.png")}
         for user in users
     ]})
+
+
+@login_required
+@require_POST
+def image_delete(request, id):
+    """
+    Supprime une photo et ses fichiers. Ouvert à tous les membres (les doublons viennent souvent de quelqu'un d'autre) ;
+    la vignette du moment est recalculée si c'était elle.
+    """
+
+    image = get_object_or_404(Image.objects.select_related("note__moment"), id=id)
+    moment = image.note.moment if image.note else None
+    image.delete()
+    if moment:
+        moment.refresh_from_db()
+        ensure_thumbnail(moment)
+    return JsonResponse({"ok": True})

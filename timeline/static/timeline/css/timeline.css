@@ -67,7 +67,7 @@
 .sv-roll {
     position: sticky;
     top: var(--sv-space-md);
-    height: 24rem;
+    height: var(--sv-avail, 24rem);     /* toute la hauteur de la frise, le cylindre s'adapte (--sv-roll-s, mesuré par timeline.js) */
     overflow: hidden;
     perspective: 650px;
     touch-action: none;
@@ -93,14 +93,14 @@
     top: 50%;
     left: 0;
     right: 1.2rem;
-    height: 3.4rem;
-    margin-top: -1.7rem;
+    height: calc(3.4rem * var(--sv-roll-s, 1));
+    margin-top: calc(-1.7rem * var(--sv-roll-s, 1));
     padding: 0;
     border: 0;
     background: none;
     color: var(--sv-ink);
     font-family: var(--sv-font-title);
-    font-size: 2.3rem;
+    font-size: calc(2.3rem * var(--sv-roll-s, 1));
     font-weight: 300;
     text-align: right;
     cursor: pointer;
@@ -118,9 +118,9 @@
 .sv-frise-wrap { position: relative; min-width: 0; }
 
 .sv-frise-wrap .sv-frise {
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 1.9rem, #000 calc(100% - 2.8rem), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 calc(1.9rem * var(--sv-k, 1)), #000 calc(100% - 2.8rem * var(--sv-k, 1)), transparent);
     -webkit-mask-composite: source-in;
-    mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 1.9rem, #000 calc(100% - 2.8rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent), linear-gradient(to bottom, transparent, #000 calc(1.9rem * var(--sv-k, 1)), #000 calc(100% - 2.8rem * var(--sv-k, 1)), transparent);
     mask-composite: intersect;
 }
 
@@ -133,8 +133,8 @@
     backdrop-filter: blur(3px);
 }
 
-.sv-frise-veil--top { left: 0; right: 0; height: 1.9rem; }
-.sv-frise-veil--bottom { left: 0; right: 0; height: 2.6rem; }
+.sv-frise-veil--top { left: 0; right: 0; height: calc(1.9rem * var(--sv-k, 1)); }
+.sv-frise-veil--bottom { left: 0; right: 0; height: calc(2.6rem * var(--sv-k, 1)); }
 .sv-frise-veil--left, .sv-frise-veil--right { top: 0; bottom: 0; width: 4.2rem; }
 
 .sv-frise-veil--top { top: 0; -webkit-mask-image: linear-gradient(to bottom, #000, transparent); mask-image: linear-gradient(to bottom, #000, transparent); }
@@ -173,12 +173,13 @@
 }
 
 .sv-frise__track {
-    /* La frise occupe toute la hauteur restante de l'écran : si les étages ne suffisent pas, ils s'espacent davantage */
-    --sv-avail: calc(100svh - 14rem);
-    --sv-step: max(8.8rem, (var(--sv-avail) - 10.3rem) / (var(--sv-tiers-top) + var(--sv-tiers-bottom)));
+    /* La frise occupe toute la hauteur restante de l'écran (--sv-avail, mesurée par timeline.js) : si les étages ne
+       suffisent pas, ils s'espacent davantage ; s'ils sont trop nombreux, tout rétrécit d'un facteur --sv-k (0,5 à 1)
+       pour que la frise tienne sans faire défiler la page */
+    --sv-step: max(8.8rem * var(--sv-k, 1), (var(--sv-avail, 100svh - 14rem) - 14.5rem * var(--sv-k, 1)) / (var(--sv-tiers-top) + var(--sv-tiers-bottom)));
     position: relative;
     width: calc(var(--sv-years) * max(100cqw, 64rem));
-    height: calc(10.1rem + (var(--sv-tiers-top) + var(--sv-tiers-bottom)) * var(--sv-step) + 0.2rem);
+    height: calc(14.5rem * var(--sv-k, 1) + (var(--sv-tiers-top) + var(--sv-tiers-bottom)) * var(--sv-step));     /* 14,5 = 10,3 d'en-tête + 4,2 de pied : le titre des pastilles du bas reste hors du fondu */
 }
 
 .sv-frise__plot { position: absolute; inset: 0; }
@@ -190,7 +191,7 @@
     bottom: 0;
     left: var(--sv-x);
     width: var(--sv-w);
-    padding: 6rem 0 0 0.5rem;
+    padding: calc(6rem * var(--sv-k, 1)) 0 0 0.5rem;
     border-left: 1px dotted var(--sv-ink-faint);
 }
 
@@ -199,7 +200,7 @@
 /* L'année : en bordeaux, au-dessus de tout, et qui reste en vue tant qu'on est dans cette année */
 .sv-yearlabel {
     position: absolute;
-    top: 2.2rem;
+    top: calc(2.2rem * var(--sv-k, 1));
     left: var(--sv-x);
     z-index: 12;
     width: var(--sv-w);
@@ -219,21 +220,21 @@
 
 .sv-yearlabel__number {
     font-family: var(--sv-font-title);
-    font-size: 3rem;
+    font-size: max(1.3rem, 3rem * var(--sv-k, 1));
     font-weight: 300;
     line-height: 0.95;
     letter-spacing: 0.02em;
     color: color-mix(in srgb, var(--sv-bordeaux) 72%, var(--sv-cream));
 }
 
-.sv-yearlabel__count { font-family: var(--sv-font-hand); font-size: 1.2rem; line-height: 1; color: var(--sv-ink-soft); opacity: 0.75; }
+.sv-yearlabel__count { font-family: var(--sv-font-hand); font-size: max(0.75rem, 1.2rem * var(--sv-k, 1)); line-height: 1; color: var(--sv-ink-soft); opacity: 0.75; }
 
 /* L'axe du temps : un fil pointillé qui ondule, comme les itinéraires des cartes illustrées */
 .sv-axis {
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(8.9rem + var(--sv-tiers-top) * var(--sv-step) + 1.5rem);
+    top: calc(10.4rem * var(--sv-k, 1) + var(--sv-tiers-top) * var(--sv-step));
 }
 
 .sv-wave {
@@ -260,8 +261,8 @@
     position: absolute;
     left: var(--sv-x);
     top: var(--sv-y);
-    width: calc(var(--sv-size) * 1.2);
-    height: calc(var(--sv-size) * 1.03);
+    width: calc(var(--sv-size) * 1.2 * var(--sv-k, 1));
+    height: calc(var(--sv-size) * 1.03 * var(--sv-k, 1));
     fill: none;
     stroke: var(--sv-ink-soft);
     stroke-width: 2.2;
@@ -303,15 +304,15 @@ symbol path, symbol circle { vector-effect: non-scaling-stroke; }
     text-decoration: none;
 }
 
-.sv-pin--haut { bottom: calc(1.2rem + var(--sv-tier) * var(--sv-step) - var(--sv-dy) * 1rem); }
-.sv-pin--bas  { top: calc(1.2rem + var(--sv-tier) * var(--sv-step) + var(--sv-dy) * 1rem); }
+.sv-pin--haut { bottom: calc(1.2rem * var(--sv-k, 1) + var(--sv-tier) * var(--sv-step) - var(--sv-dy) * 1rem); }
+.sv-pin--bas  { top: calc(1.2rem * var(--sv-k, 1) + var(--sv-tier) * var(--sv-step) + var(--sv-dy) * 1rem); }
 
 /* Le fil pointillé qui relie la pastille à l'axe */
 .sv-pin::after {
     content: "";
     position: absolute;
     left: 50%;
-    height: calc(1.2rem + var(--sv-tier) * var(--sv-step));
+    height: calc(1.2rem * var(--sv-k, 1) + var(--sv-tier) * var(--sv-step));
     border-left: 1.5px dotted var(--sv-ink-soft);
 }
 
@@ -322,9 +323,9 @@ symbol path, symbol circle { vector-effect: non-scaling-stroke; }
 
 .sv-pin__cover {
     display: block;
-    width: 4.9rem;
-    height: 5.5rem;
-    padding: 0.28rem 0.28rem 0.95rem;
+    width: calc(4.9rem * var(--sv-k, 1));
+    height: calc(5.5rem * var(--sv-k, 1));
+    padding: calc(0.28rem * var(--sv-k, 1)) calc(0.28rem * var(--sv-k, 1)) calc(0.95rem * var(--sv-k, 1));
     background: var(--sv-paper);
     box-shadow: var(--sv-shadow-paper);
     transform: rotate(var(--sv-tilt));
@@ -341,7 +342,7 @@ symbol path, symbol circle { vector-effect: non-scaling-stroke; }
     background: var(--sv-cream-deep);
     color: var(--sv-bordeaux);
     font-family: var(--sv-font-title);
-    font-size: 2.2rem;
+    font-size: calc(2.2rem * var(--sv-k, 1));
     font-style: italic;
     font-weight: 300;
 }
@@ -359,7 +360,7 @@ symbol path, symbol circle { vector-effect: non-scaling-stroke; }
     margin-top: 0.3rem;
     overflow: hidden;
     font-family: var(--sv-font-title);
-    font-size: 1.05rem;
+    font-size: max(0.6rem, 1.05rem * var(--sv-k, 1));
     font-weight: 500;
     line-height: 1.1;
     text-shadow: 0 0 5px var(--sv-cream), 0 0 5px var(--sv-cream), 0 0 3px var(--sv-cream);

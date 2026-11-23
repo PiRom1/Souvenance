@@ -164,6 +164,7 @@ a:hover { color: var(--sv-bordeaux-deep); }
 
 .sv-btn--ghost { background: transparent; color: var(--sv-ink); border-color: var(--sv-ink-faint); }
 .sv-btn--ghost:hover { background: rgba(59, 42, 32, 0.06); color: var(--sv-ink); }
+.sv-btn--ghost.sv-btn--danger { color: var(--sv-bordeaux); margin-right: auto; }
 
 .sv-btn--link {
     padding: 0;
@@ -531,3 +532,30 @@ a:hover { color: var(--sv-bordeaux-deep); }
 .sv-field__inline { display: flex; align-items: center; gap: var(--sv-space-sm); }
 .sv-field__inline input[type="date"] { flex: 1; min-width: 0; }
 .sv-field__time { flex: none; font-family: var(--sv-font-hand); font-size: 1.3rem; color: var(--sv-bordeaux); }
+
+/* ---------- Avertissement (moments proches) ---------- */
+
+.sv-warning { margin-top: var(--sv-space-sm); padding: var(--sv-space-xs) var(--sv-space-sm); border: 1px solid var(--sv-gold); border-left-width: 4px; border-radius: var(--sv-radius-paper); background: rgba(201, 162, 75, 0.15); color: var(--sv-ink); font-size: var(--sv-text-small); }
+.sv-warning[hidden] { display: none; }
+.sv-warning ul { margin: var(--sv-space-2xs) 0 0; padding-left: 1.2em; }
+.sv-warning a { color: var(--sv-bordeaux); text-decoration: underline; }
+
+/* ---------- Écran d'attente à l'envoi d'une note ---------- */
+
+.sv-sending { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: rgba(59, 42, 32, 0.6); }
+.sv-sending[hidden] { display: none; }
+.sv-sending__box { max-width: 24rem; padding: var(--sv-space-lg); border-radius: var(--sv-radius-paper); background: var(--sv-paper); box-shadow: var(--sv-shadow-lifted); text-align: center; }
+.sv-sending__spinner { display: block; width: 2.5rem; height: 2.5rem; margin: 0 auto var(--sv-space-sm); border: 3px solid var(--sv-ink-faint); border-top-color: var(--sv-bordeaux); border-radius: 50%; animation: sv-spin 0.9s linear infinite; }
+.sv-sending__title { margin: 0; font-family: var(--sv-font-title); font-size: var(--sv-text-large); }
+.sv-sending__hint { margin: var(--sv-space-2xs) 0 0; color: var(--sv-ink-soft); font-size: var(--sv-text-small); }
+@keyframes sv-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sv-sending__spinner { animation-duration: 3s; } }
+
+.sv-sending__progress { margin-top: var(--sv-space-sm); }
+.sv-sending__progress[hidden] { display: none; }
+.sv-sending__track { height: 0.7rem; overflow: hidden; border-radius: var(--sv-radius-round); background: var(--sv-ink-faint); }
+.sv-sending__bar { width: 0; height: 100%; border-radius: inherit; background: var(--sv-bordeaux); transition: width 0.2s linear; }
+.sv-sending__detail { margin: var(--sv-space-2xs) 0 0; color: var(--sv-ink-soft); font-size: var(--sv-text-small); font-variant-numeric: tabular-nums; }
+
+/* L'accueil tient dans l'écran : pas de grande marge sous la frise */
+.sv-page--timeline { padding-bottom: var(--sv-space-sm); }

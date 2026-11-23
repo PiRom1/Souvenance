@@ -603,3 +603,6 @@
 .sv-lightbox__person .sv-face { width: 2.9rem; height: 2.9rem; }
 .sv-lightbox__person:hover { opacity: 0.8; }
 .sv-lightbox__person.is-on { border-color: var(--sv-cream); opacity: 1; filter: none; }
+
+.sv-lightbox__delete { margin-top: 0.5rem; padding: 0.3em 1.1em; border: 1px solid rgba(251, 246, 234, 0.4); border-radius: var(--sv-radius-round); background: transparent; color: var(--sv-cream); font: 500 0.8rem var(--sv-font-ui); cursor: pointer; opacity: 0.7; }
+.sv-lightbox__delete:hover { opacity: 1; background: var(--sv-bordeaux); border-color: var(--sv-bordeaux); }

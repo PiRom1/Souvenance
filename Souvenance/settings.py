@@ -3,6 +3,7 @@ Django settings for Souvenance project.
 """
 
 import os
+import tempfile
 from pathlib import Path
 
 import dotenv
@@ -154,3 +155,17 @@ CONSTANCE_CONFIG = {}
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Une note peut recevoir plusieurs centaines de photos d'un coup : chacune envoie ses fichiers et une dizaine de
+# champs (légende, tags, date...). Les plafonds par défaut de Django (100 fichiers, 1000 champs) sont trop bas.
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
+
+# Progression du traitement des photos d'une note : lue par une autre requête, parfois sur un autre worker gunicorn,
+# donc un cache partagé (fichiers) et non celui, propre à chaque processus, par défaut
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(tempfile.gettempdir(), 'souvenance_cache'),
+    }
+}

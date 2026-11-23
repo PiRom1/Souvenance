@@ -12,9 +12,46 @@
     const desktop = window.matchMedia("(min-width: 48.01rem)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const RADIUS = 150;     // rayon du cylindre, en px
+    const RADIUS = 150;     // rayon du cylindre à taille normale, en px (il s'agrandit ou rétrécit avec la frise)
     const STEP = 27;        // degrés entre deux années voisines
     const VISIBLE = 3;      // années visibles de part et d'autre de celle du centre
+
+    // ---------- Hauteur : la frise tient dans l'écran, sans défilement de la page ----------
+
+    const timeline = frise.closest(".sv-timeline");
+    const HEADER = 14.5;     // rem : en-tête (année, mois) et pied (titres du bas hors du fondu) de la frise à taille réelle
+    const TIER = 8.8;           // rem : hauteur d'un étage de pastilles à taille réelle
+    const MIN_SCALE = 0.12;
+    const ROLL_HEIGHT = 24;     // rem : hauteur du cylindre à taille normale
+    let rollScale = 1;
+    let rollReady = false;
+
+    function fit() {
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const style = getComputedStyle(track);
+        const tiers = (parseInt(style.getPropertyValue("--sv-tiers-top"), 10) || 1) + (parseInt(style.getPropertyValue("--sv-tiers-bottom"), 10) || 1);
+        // Début de la frise dans la page (sous le bandeau d'années sur téléphone ou en très fort zoom)
+        const top = frise.getBoundingClientRect().top + window.scrollY;
+        const below = parseFloat(getComputedStyle(document.querySelector(".sv-page")).paddingBottom) || 0;
+        const available = window.innerHeight - top - below;
+        const scale = Math.max(MIN_SCALE, Math.min(1, available / ((HEADER + tiers * TIER) * rem)));
+        timeline.style.setProperty("--sv-avail", `${Math.floor(available)}px`);
+        timeline.style.setProperty("--sv-k", scale.toFixed(3));
+        if (desktop.matches) {
+            rollScale = Math.max(0.35, Math.min(1.6, available / (ROLL_HEIGHT * rem)));
+            timeline.style.setProperty("--sv-roll-s", rollScale.toFixed(3));
+        } else {
+            rollScale = 1;
+            timeline.style.removeProperty("--sv-roll-s");
+        }
+        if (rollReady) drawRoll(position());
+    }
+
+    fit();
+    window.addEventListener("resize", fit);
+    document.querySelector(".sv-filters")?.addEventListener("toggle", fit);
+    desktop.addEventListener("change", fit);
+    if (document.fonts) document.fonts.ready.then(fit);
 
     // ---------- Géométrie : où commence chaque année, en px ----------
 
@@ -60,7 +97,7 @@
             const distance = i - at;
             const angle = Math.max(-75, Math.min(75, distance * STEP)) * Math.PI / 180;
             const hidden = desktop.matches && Math.abs(distance) > VISIBLE;
-            button.style.setProperty("--sv-y", `${(RADIUS * Math.sin(angle)).toFixed(1)}px`);
+            button.style.setProperty("--sv-y", `${(RADIUS * rollScale * Math.sin(angle)).toFixed(1)}px`);
             button.style.setProperty("--sv-rx", `${(-angle * 180 / Math.PI).toFixed(1)}deg`);
             button.style.setProperty("--sv-s", Math.max(0.6, Math.cos(angle)).toFixed(2));
             button.style.setProperty("--sv-o", hidden ? 0 : Math.max(0, 1 - Math.abs(distance) * 0.28).toFixed(2));
@@ -338,6 +375,7 @@
         const wanted = years.findIndex(button => button.dataset.year === roll.dataset.selected);
         const index = wanted >= 0 ? wanted : years.findIndex(button => Number(button.dataset.year) === currentYear);
         jumpTo(scrollForYear(Math.max(0, index)));
+        rollReady = true;
         drawRoll(position());
     }
 

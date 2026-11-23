@@ -4,7 +4,10 @@
 {% block title %}{{ titre }} — Souvenance{% endblock %}
 {% block page_class %}sv-page--form{% endblock %}
 
-{% block head %}<script src="{% static 'timeline/js/moment_form.js' %}" defer></script>{% endblock %}
+{% block head %}
+    <script src="{% static 'timeline/js/moment_form.js' %}" defer></script>
+    <script src="{% static 'timeline/js/leave_warning.js' %}" defer></script>
+{% endblock %}
 
 {% block content %}
 <div class="sv-paper sv-momentform">
@@ -13,7 +16,7 @@
         {% if not form.instance.pk %}<p class="sv-momentform__intro">Les notes et les photos viendront ensuite, une fois le moment créé.</p>{% endif %}
     </header>
 
-    <form class="sv-momentform__form" method="post" novalidate>
+    <form class="sv-momentform__form" method="post" novalidate data-warn-leave{% if not form.instance.pk %} data-nearby-url="{% url 'moments_proches' %}"{% endif %}>
         {% csrf_token %}
         {{ form.non_field_errors }}
 
@@ -44,6 +47,7 @@
                             {{ form.lieu.errors }}
                         </div>
                     </div>
+                    <div class="sv-warning" data-nearby hidden role="status"></div>
                 </fieldset>
 
                 <fieldset class="sv-momentform__section">
@@ -69,7 +73,8 @@
         </div>
 
         <div class="sv-momentform__actions">
-            <a class="sv-btn sv-btn--ghost" href="{% if form.instance.pk %}{% url 'moment' form.instance.pk %}{% else %}{% url 'home' %}{% endif %}">Annuler</a>
+            {% if peut_supprimer %}<a class="sv-btn sv-btn--ghost sv-btn--danger" data-leave-link href="{% url 'moment_delete' form.instance.pk %}">Supprimer le moment</a>{% endif %}
+            <a class="sv-btn sv-btn--ghost" data-leave-link href="{% if form.instance.pk %}{% url 'moment' form.instance.pk %}{% else %}{% url 'home' %}{% endif %}">Annuler</a>
             <button class="sv-btn sv-btn--large" type="submit">{% if form.instance.pk %}Enregistrer les changements{% else %}Créer le moment{% endif %}</button>
         </div>
     </form>
